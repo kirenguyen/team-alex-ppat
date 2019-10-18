@@ -1,10 +1,17 @@
-int trigPin = 8;    // Trigger
-int echoPin = 9;    // Echo
-int trigPin2 = 7;    // Trigger
-int echoPin2 = 6;    // Echo
+#define trigPin 8
+#define echoPin 9
 
-int ledPin = A3;
-long duration, duration2, cm, inches, inches2;
+#define trigPin2 7
+#define echoPin2 6
+
+#define alertPin 2
+
+const int MAX_DISTANCE = 12; //inches
+
+const int MIN_DISTANCE = 1; //inches   TODO: closer than this will still result in a standard alert without taking into account trajectory
+
+
+int inches, inches2, oldDistance, oldDistance2;
  
 void setup() {
   //Serial Port begin
@@ -12,84 +19,64 @@ void setup() {
   //Define inputs and outputs
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  
   pinMode(trigPin2, OUTPUT);
   pinMode(echoPin2, INPUT);
-  pinMode(ledPin, OUTPUT);
- 
+  
+  pinMode(alertPin, OUTPUT);
+  oldDistance = MAX_DISTANCE;
+  oldDistance2 = MAX_DISTANCE;
 }
  
 void loop() {
-  digitalWrite(trigPin2, LOW);
-  delayMicroseconds(5);
-  digitalWrite(trigPin2, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin2, LOW);
- 
-  // Read the signal from the sensor: a HIGH pulse whose
-  // duration is the time (in microseconds) from the sending
-  // of the ping to the reception of its echo off of an object.
-  pinMode(echoPin2, INPUT);
-  duration2 = pulseIn(echoPin2, HIGH);
- 
-  // Convert the time into a distance
-  cm = (duration2/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
-  inches2 = (duration2/2) / 74;   // Divide by 74 or multiply by 0.0135
-  
-  Serial.print(inches2);
-  Serial.print("in, ");
-  Serial.print(cm);
-  Serial.print("cm");
-  Serial.println();
-//    if (inches2<12) {
-//    // turn LED on:
-//    analogWrite(ledPin, 255);//from 0 to 255
-//    tone(3,1000);
-//  } else {
-//    // turn LED off:
-//    analogWrite(ledPin, 0);//from 0 to 255
-//    noTone(3);
-//  }
-  
-  // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
-  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(5);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
- 
-  // Read the signal from the sensor: a HIGH pulse whose
-  // duration is the time (in microseconds) from the sending
-  // of the ping to the reception of its echo off of an object.
-  pinMode(echoPin, INPUT);
-  duration = pulseIn(echoPin, HIGH);
- 
-  // Convert the time into a distance
-  cm = (duration/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
-  inches = (duration/2) / 74;   // Divide by 74 or multiply by 0.0135
-  
-  Serial.print(inches);
-  Serial.print("in, ");
-  Serial.print(cm);
-  Serial.print("cm");
-  Serial.println();
-    if (inches<12 || inches2<12) {
-    // turn LED on:
-    analogWrite(ledPin, 255);//from 0 to 255
-    tone(3,1000);
-    digitalWrite(8, HIGH);
-  } else {
-    // turn LED off:
-    analogWrite(ledPin, 0);//from 0 to 255
-    digitalWrite(8, LOW);
-    noTone(3);
-  }
-  
-  //delay(250);
+  inches = getDistanceInches(trigPin, echoPin);
+  inches2 = getDistanceInches(trigPin2, echoPin2);
 
+  Serial.print("inches 1: ");
+  Serial.println(inches); 
+  Serial.print("inches 2: ");
+  Serial.println(inches2);
+  
+  checkForAlert(inches, inches2);
 
-
+//  update old distances to most recent distance
+  oldDistance = inches;
+  oldDistance2 = inches2;
   
   delay(250);
 }
 
+void checkForAlert(int distance, int distance2) {
+  // Checks if any of the sensors are in the alert range and gives varying length alerts for alarm
+  
+  if ((distance < MAX_DISTANCE) && (distance < oldDistance)){
+    tone(alertPin, 1000, 500);
+  }
+  else if ((distance2 < MAX_DISTANCE) && (distance2 < oldDistance2)){
+    tone(alertPin, 1000, 500);
+  } 
+  else if ((distance < MIN_DISTANCE) || (distance2 < MIN_DISTANCE)){
+    // very very close
+    tone(alertPin, 1000, 1000);
+  } else {
+    noTone(alertPin);
+  }
+}
+
+
+int getDistanceInches(int trig, int echo) {
+  // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
+  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
+
+  digitalWrite(trig, LOW);
+  delayMicroseconds(5);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+
+  // Bounce time must be immediately taken after sensor trigger, otherwise errors occur
+  
+  int bounceTime = pulseIn(echo, HIGH);
+  int distance = (bounceTime / 2) / 74;   // Divide by 74 or multiply by 0.0135 for inches
+  return distance;
+}

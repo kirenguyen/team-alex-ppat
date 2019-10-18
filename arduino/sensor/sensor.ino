@@ -45,7 +45,8 @@ void loop() {
     alert_level = MIN_ALERT_LEVEL + floor((MAX_DISTANCE - distance) * ALERT_FACTOR);
     Serial.print("Alert level: ");
     Serial.println(alert_level);
-    analogWrite(ALERT_PIN, alert_level);
+//    analogWrite(ALERT_PIN, alert_level);
+    tone(ALERT_PIN, 1000, 1000);
   } else if (distance < MIN_DISTANCE && distance < old_distance) {
     digitalWrite(ALERT_PIN, HIGH); //turn onto max
   } else {

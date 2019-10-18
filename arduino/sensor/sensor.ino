@@ -4,7 +4,7 @@ const int ALERT_PIN = A4;
 
 // proximity range for variable vibration
 const int MAX_DISTANCE = 30; //cm
-const int MIN_DISTANCE = 5; //cm, closer than this will result in max vibration
+const int MIN_DISTANCE = 5; //cm, closer than this will result in alert
 const int MIN_ALERT_LEVEL = 130;  // analog level to alert [0, 255]
 const long ALERT_FACTOR = (256 - MIN_ALERT_LEVEL) / (MAX_DISTANCE - MIN_DISTANCE);
 
@@ -45,12 +45,11 @@ void loop() {
     alert_level = MIN_ALERT_LEVEL + floor((MAX_DISTANCE - distance) * ALERT_FACTOR);
     Serial.print("Alert level: ");
     Serial.println(alert_level);
-//    analogWrite(ALERT_PIN, alert_level);
-    tone(ALERT_PIN, 1000, 1000);
+    tone(ALERT_PIN, 1000, 500);
   } else if (distance < MIN_DISTANCE && distance < old_distance) {
-    digitalWrite(ALERT_PIN, HIGH); //turn onto max
+    tone(ALERT_PIN, 1000, 500);
   } else {
-    digitalWrite(ALERT_PIN, LOW); // turn off
+    noTone(ALERT_PIN);
   }
   old_distance = distance;
 

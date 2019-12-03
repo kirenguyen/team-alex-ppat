@@ -4,8 +4,8 @@ Description=Startup video feed and path overlay
 [Service]
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/pi/.Xauthority
-ExecStart=sh /home/pi/team-alex-ppat-master/camerafeed.sh
-ExecStop=sh /home/pi/team-alex-ppat-master/stopcamerafeed.sh
+ExecStart=sh /home/pi/team-alex-ppat/camerafeed.sh
+ExecStop=sh /home/pi/team-alex-ppat/stopcamerafeed.sh
 RestartSec=10s
 KillMode=process
 TimeoutSec=10s

@@ -65,6 +65,7 @@ void setup()
   
    // Allow wake up triggered by button press
   attachInterrupt(1, button_on_isr, LOW);    // button pin 
+  attachInterrupt(2, button_off_isr, HIGH);
   
   // initialize serial communication: In Arduino IDE use "Serial Monitor"
   //Serial.begin(9600);
@@ -115,7 +116,7 @@ void loop()
     }
 
     if (buttonOffPressed) {
-      detachInterrupt(1);
+      detachInterrupt(2);
       buttonOffPressed = false;
       switch (buttonOffState) {
         case eBUTTON_RELEASED:
@@ -129,14 +130,14 @@ void loop()
           }
           buttonOffState = eBUTTON_PRESSED;
           digitalWrite(LED_PIN_OFF, HIGH);
-          attachInterrupt(1, button_off_isr, HIGH);
+          attachInterrupt(2, button_off_isr, HIGH);
           break;
         case eBUTTON_PRESSED:
           // button released
           unsigned long buttonOffTime;
           buttonOffState = eBUTTON_RELEASED;
           digitalWrite(LED_PIN_OFF, LOW);
-          attachInterrupt(1, button_off_isr, LOW);
+          attachInterrupt(2, button_off_isr, LOW);
           break;
         default:
           break;
